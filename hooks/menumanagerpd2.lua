@@ -34,11 +34,13 @@ function Cry3menu:OpenMenu()
 	end
 end
 
-function Cry3menu:changeWeaponPart(mod_name)
+function Cry3menu:changeWeaponPart(info)
+	local category = info.category
+	local mod_name = info.mod_name
 	local player = managers.player:local_player()
 	local player_inv = player:inventory()
-	local weap_base = player_inv:equipped_unit():base()
-	local blueprint = deep_clone(weap_base._blueprint)
+	local weapon_base = player_inv:equipped_unit():base()
+	local blueprint = deep_clone(weapon_base._blueprint)
 	local remove_part = false
 	for _,v in pairs(blueprint) do
 		if v == mod_name and not Cry3menu._current_weapon_default_blueprint_set[mod_name] then
@@ -46,8 +48,28 @@ function Cry3menu:changeWeaponPart(mod_name)
 			break
 		end
 	end
-	managers.weapon_factory:change_part_blueprint_only(weap_base._factory_id, mod_name, blueprint, remove_part)
-	player_inv:add_unit_by_factory_name(weap_base._factory_id, false, false, blueprint, weap_base._cosmetics_data, weap_base._textures)
+	local ammo_total = weapon_base:ammo_base():get_ammo_total()
+	local ammo_remaining_in_clip = weapon_base:ammo_base():get_ammo_remaining_in_clip()
+	managers.weapon_factory:change_part_blueprint_only(weapon_base._factory_id, mod_name, blueprint, remove_part)
+	player_inv:add_unit_by_factory_name(weapon_base._factory_id, false, false, blueprint, weapon_base._cosmetics_data, weapon_base._textures)
+
+	local new_weapon_base = self.get_player_weapon_base()
+	local is_new_mag_size = new_weapon_base:ammo_base():get_ammo_max_per_clip() ~= weapon_base:ammo_base():get_ammo_max_per_clip()
+	local is_new_max_ammo = new_weapon_base:ammo_base():get_ammo_max() ~= weapon_base:ammo_base():get_ammo_max()
+	local is_new_bullet_class = new_weapon_base._bullet_class ~= weapon_base._bullet_class
+	local is_magazine_or_ammo = category == "ammo" or category == "magazine"
+
+	-- Set ammo, if started with less then new version then use that ammo count
+	new_weapon_base:ammo_base():set_ammo_total(math.min(ammo_total, new_weapon_base:ammo_base():get_ammo_total()))
+
+	if is_magazine_or_ammo or is_new_mag_size or is_new_max_ammo or is_new_bullet_class then
+		log("reload because of category"..tostring(category))
+		new_weapon_base:set_ammo_remaining_in_clip(0)
+	else 
+		new_weapon_base:set_ammo_remaining_in_clip(ammo_remaining_in_clip)
+	end
+
+	managers.hud:set_ammo_amount(new_weapon_base:selection_index(), new_weapon_base:ammo_info())
 end
 
 function Cry3menu:SetMyRadialMenu(menu)
@@ -69,6 +91,30 @@ function Cry3menu:openCategoryMenu(key)
 	if self.radial_sub_menus and self.radial_sub_menus[key] then
 		self.radial_sub_menus[key]:Toggle()
 	end
+end
+
+function Cry3menu:get_player_weapon_base()
+	local player = managers.player:local_player()
+	if not player then
+		return
+	end
+	local player_inv = player:inventory()
+	if not player_inv:equipped_unit() or not player_inv:equipped_unit():base() then
+		return false
+	end
+	local name_id = player_inv:equipped_unit():base():get_name_id()
+	if not name_id then
+		return false
+	end
+	local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(name_id)
+	if not factory_id then
+		return false
+	end
+	local factory_data = tweak_data.weapon.factory[factory_id]
+	if not factory_id or not factory_data.uses_parts then
+		return false
+	end
+	return player_inv:equipped_unit():base()
 end
 
 if PlayerInventory then
@@ -139,7 +185,7 @@ if PlayerInventory then
 								color = Color(1,1,1)
 							},
 							stay_open = true,
-							callback = callback(Cry3menu,Cry3menu,"changeWeaponPart", mod_name)
+							callback = callback(Cry3menu,Cry3menu,"changeWeaponPart", { mod_name = mod_name, category = category })
 						})
 					end
 				end
