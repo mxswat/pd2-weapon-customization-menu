@@ -2,6 +2,6 @@
   "cry3menu_ammo_standard": "Standard Ammo",
   "cry3menu_menu_title": "Multi-Arrow Menu",
   "cry3menu_menu_desc": " ",
-  "cry3menu_option_keybind_open_menu_title": "Keybind: Arrow Menu",
-  "cry3menu_option_keybind_open_menu_desc": "Opens the Arrow Menu."
+  "cry3menu_option_keybind_open_menu_title": "Keybind: Customize weapon Menu",
+  "cry3menu_option_keybind_open_menu_desc": "Opens the Customize weapon Menu."
 }
