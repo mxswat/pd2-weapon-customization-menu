@@ -54,6 +54,7 @@ function Cry3menu:changeWeaponPart(info)
 	player_inv:add_unit_by_factory_name(weapon_base._factory_id, false, false, blueprint, weapon_base._cosmetics_data, weapon_base._textures)
 
 	local new_weapon_base = self.get_player_weapon_base()
+	local has_less_ammo = new_weapon_base:ammo_base():get_ammo_remaining_in_clip() > weapon_base:ammo_base():get_ammo_max_per_clip()
 	local is_new_mag_size = new_weapon_base:ammo_base():get_ammo_max_per_clip() ~= weapon_base:ammo_base():get_ammo_max_per_clip()
 	local is_new_max_ammo = new_weapon_base:ammo_base():get_ammo_max() ~= weapon_base:ammo_base():get_ammo_max()
 	local is_new_bullet_class = new_weapon_base._bullet_class ~= weapon_base._bullet_class
@@ -62,7 +63,7 @@ function Cry3menu:changeWeaponPart(info)
 	-- Set ammo, if started with less then new version then use that ammo count
 	new_weapon_base:ammo_base():set_ammo_total(math.min(ammo_total, new_weapon_base:ammo_base():get_ammo_total()))
 
-	if is_magazine_or_ammo or is_new_mag_size or is_new_max_ammo or is_new_bullet_class then
+	if is_magazine_or_ammo or is_new_mag_size or is_new_max_ammo or is_new_bullet_class or has_less_ammo then
 		log("reload because of category"..tostring(category))
 		new_weapon_base:set_ammo_remaining_in_clip(0)
 	else 
