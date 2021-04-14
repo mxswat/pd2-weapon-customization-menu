@@ -51,7 +51,7 @@ function Cry3menu:changeWeaponPart(info)
 	local ammo_total = weapon_base:ammo_base():get_ammo_total()
 	local ammo_remaining_in_clip = weapon_base:ammo_base():get_ammo_remaining_in_clip()
 	managers.weapon_factory:change_part_blueprint_only(weapon_base._factory_id, mod_name, blueprint, remove_part)
-	player_inv:add_unit_by_factory_name(weapon_base._factory_id, false, false, blueprint, weapon_base._cosmetics_data, weapon_base._textures)
+	player_inv:add_unit_by_factory_name(weapon_base._factory_id, true, false, blueprint, weapon_base._cosmetics_data, weapon_base._textures)
 
 	local new_weapon_base = self.get_player_weapon_base()
 	local has_less_ammo = new_weapon_base:ammo_base():get_ammo_remaining_in_clip() > weapon_base:ammo_base():get_ammo_max_per_clip()
