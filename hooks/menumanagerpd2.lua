@@ -147,56 +147,64 @@ if PlayerInventory then
 			for _, v in ipairs(factory_data.default_blueprint) do
 				Cry3menu._current_weapon_default_blueprint_set[v] = true 
 			end
+			-- mx_print_table(Cry3menu._current_weapon_default_blueprint_set)
 			local categories = {}
 			local submenus = {}
 			for category, mod_ids in pairs(managers.weapon_factory:get_parts_from_weapon_id(name_id)) do
-				table.insert(categories, {
-					-- Change color if it is part of current blueprint?
-					text = managers.localization:text("bm_menu_"..category), 
-					icon = {  
-						texture = managers.menu_component:get_texture_from_mod_type(category, category),
-						layer = 3,
-						w = 16,
-						h = 16,
-						alpha = 1,
-						color = Color(1,1,1)
-					},
-					stay_open = false,
-					callback = callback(Cry3menu, Cry3menu, "openCategoryMenu", category)
-				})
-				local mods = {}
-				for k, mod_name in ipairs(mod_ids) do
-					local guis_catalog = "guis/"
-					local bundle_folder = tweak_data.blackmarket.weapon_mods[mod_name] and tweak_data.blackmarket.weapon_mods[mod_name].texture_bundle_folder
-					if bundle_folder then
-						guis_catalog = guis_catalog .. "dlcs/" .. tostring(bundle_folder) .. "/"
+				log(tostring(mod_ids[1]))
+				local is_only_default_stuff = #mod_ids == 1 and mod_ids[1] and Cry3menu._current_weapon_default_blueprint_set[mod_ids[1]] and true
+				if not is_only_default_stuff then
+					table.insert(categories, {
+						-- Change color if it is part of current blueprint?
+						text = managers.localization:text("bm_menu_"..category), 
+						icon = {  
+							texture = managers.menu_component:get_texture_from_mod_type(category, category),
+							layer = 3,
+							w = 16,
+							h = 16,
+							alpha = 1,
+							color = Color(1,1,1)
+						},
+						stay_open = false,
+						callback = callback(Cry3menu, Cry3menu, "openCategoryMenu", category)
+					})
+					local mods = {}
+					for k, mod_name in ipairs(mod_ids) do
+						local guis_catalog = "guis/"
+						local bundle_folder = tweak_data.blackmarket.weapon_mods[mod_name] and tweak_data.blackmarket.weapon_mods[mod_name].texture_bundle_folder
+						if bundle_folder then
+							guis_catalog = guis_catalog .. "dlcs/" .. tostring(bundle_folder) .. "/"
+						end
+						local bitmap_texture = guis_catalog .. "textures/pd2/blackmarket/icons/mods/" .. mod_name
+						local mod = tweak_data.blackmarket.weapon_mods[mod_name]
+						if not mod.unatainable and not mod.dlc or managers.dlc:is_dlc_unlocked(mod.dlc) then
+							-- if category == "ammo" then
+							-- 	log(managers.localization:text(mod.name_id)..bitmap_texture)
+							-- end
+							table.insert(mods, {
+								-- Change color if it is part of current blueprint?
+								text = managers.localization:text(mod.name_id), 
+								icon = { 
+									texture = bitmap_texture, 
+									layer = 3,
+									w = 60,
+									h = 32,
+									alpha = 1,
+									color = Color(1,1,1)
+								},
+								stay_open = true,
+								callback = callback(Cry3menu,Cry3menu,"changeWeaponPart", { mod_name = mod_name, category = category })
+							})
+						end
 					end
-					local bitmap_texture = guis_catalog .. "textures/pd2/blackmarket/icons/mods/" .. mod_name
-					local mod = tweak_data.blackmarket.weapon_mods[mod_name]
-					if not mod.unatainable and not mod.dlc or managers.dlc:is_dlc_unlocked(mod.dlc) then
-						table.insert(mods, {
-							-- Change color if it is part of current blueprint?
-							text = managers.localization:text(mod.name_id), 
-							icon = { 
-								texture = bitmap_texture, 
-								layer = 3,
-								w = 60,
-								h = 32,
-								alpha = 1,
-								color = Color(1,1,1)
-							},
-							stay_open = true,
-							callback = callback(Cry3menu,Cry3menu,"changeWeaponPart", { mod_name = mod_name, category = category })
-						})
-					end
+	
+					local params = {
+						name = category,
+						items = mods,
+						radius = 300
+					}
+					submenus[category] = RadialMouseMenu:new(params, callback(Cry3menu,Cry3menu, "SetMyRadialSubMenu"))
 				end
-
-				local params = {
-					name = category,
-					items = mods,
-					radius = 300
-				}
-				submenus[category] = RadialMouseMenu:new(params, callback(Cry3menu,Cry3menu, "SetMyRadialSubMenu"))
 			end
 			
 			local params = {
