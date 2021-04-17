@@ -64,7 +64,7 @@ function Cry3menu:changeWeaponPart(info)
 	new_weapon_base:ammo_base():set_ammo_total(math.min(ammo_total, new_weapon_base:ammo_base():get_ammo_total()))
 
 	if is_magazine_or_ammo or is_new_mag_size or is_new_max_ammo or is_new_bullet_class or has_less_ammo then
-		log("reload because of category"..tostring(category))
+		-- log("reload because of category"..tostring(category))
 		new_weapon_base:set_ammo_remaining_in_clip(0)
 	else 
 		new_weapon_base:set_ammo_remaining_in_clip(ammo_remaining_in_clip)
@@ -151,7 +151,7 @@ if PlayerInventory then
 			local categories = {}
 			local submenus = {}
 			for category, mod_ids in pairs(managers.weapon_factory:get_parts_from_weapon_id(name_id)) do
-				log(tostring(mod_ids[1]))
+				-- log(tostring(mod_ids[1]))
 				local is_only_default_stuff = #mod_ids == 1 and mod_ids[1] and Cry3menu._current_weapon_default_blueprint_set[mod_ids[1]] and true
 				if not is_only_default_stuff then
 					table.insert(categories, {
