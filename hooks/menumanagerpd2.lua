@@ -3,6 +3,7 @@ _G.Cry3menu = {}
 Cry3menu._path = ModPath
 Cry3menu._save_path = SavePath .. "Cry3menuSettings.txt"
 Cry3menu._current_weapon_default_blueprint_set = {}
+Cry3menu.DEBUG_MODE = false
 
 Hooks:Add("LocalizationManagerPostInit", "F_"..Idstring("Cry3menu:Loc"):key(), function( loc )
 	local langFile = "english.txt"
@@ -29,7 +30,7 @@ function Cry3menu:Save()
 end
 
 function Cry3menu:OpenMenu()
-	if self.radial_menu then
+	if self.radial_menu and Utils:IsInHeist() then
 		self.radial_menu:Toggle()
 	end
 end
@@ -43,7 +44,7 @@ function Cry3menu:changeWeaponPart(info)
 	local blueprint = deep_clone(weapon_base._blueprint)
 	local remove_part = false
 	for _,v in pairs(blueprint) do
-		if v == mod_name and not Cry3menu._current_weapon_default_blueprint_set[mod_name] then
+		if v == mod_name and (Cry3menu.DEBUG_MODE or not Cry3menu._current_weapon_default_blueprint_set[mod_name]) then
 			remove_part = true
 			break
 		end
@@ -152,7 +153,7 @@ if PlayerInventory then
 			local submenus = {}
 			for category, mod_ids in pairs(managers.weapon_factory:get_parts_from_weapon_id(name_id)) do
 				-- log(tostring(mod_ids[1]))
-				local is_only_default_stuff = #mod_ids == 1 and mod_ids[1] and Cry3menu._current_weapon_default_blueprint_set[mod_ids[1]] and true
+				local is_only_default_stuff = not Cry3menu.DEBUG_MODE and #mod_ids == 1 and mod_ids[1] and Cry3menu._current_weapon_default_blueprint_set[mod_ids[1]] and true
 				if not is_only_default_stuff then
 					table.insert(categories, {
 						-- Change color if it is part of current blueprint?
