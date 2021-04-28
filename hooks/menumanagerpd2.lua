@@ -216,5 +216,13 @@ if PlayerInventory then
 		
 			local my_radial_menu = RadialMouseMenu:new(params, callback(Cry3menu,Cry3menu,"SetMyRadialMenu"))
 		end
+
+		-- Handle force close 
+		if not Utils:IsInHeist() and self.radial_menu and self.radial_sub_menus then
+			self.radial_menu:Toggle(false)
+			for k,v in pairs(self.radial_sub_menus) do
+				self.radial_sub_menus[k]:Toggle(false)
+			end
+		end
 	end)
 end
